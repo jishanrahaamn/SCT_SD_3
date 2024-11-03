@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #7e3bcbd6;
+        }
+
+        .container {
+            background-color: rgba(238, 250, 210, 0.508);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+        }
+
+        td {
+            border: 1px solid #333;
+            width: 40px;
+            height: 40px;
+        }
+
+        input {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 18px;
+            border: none;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #a72828c8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sudoku Solver</h1>
+    <table id="sudokuGrid">
+        <!-- The 9x9 grid will be generated dynamically here -->
+    </table>
+    <button class="btn" onclick="solveSudoku()">Solve</button>
+</div>
+
+<script>
+    // Create an empty 9x9 grid
+    const grid = Array.from({ length: 9 }, () => Array(9).fill(''));
+
+    function createGrid() {
+        const table = document.getElementById('sudokuGrid');
+        for (let row = 0; row < 9; row++) {
+            const tr = document.createElement('tr');
+            for (let col = 0; col < 9; col++) {
+                const td = document.createElement('td');
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = '1';
+                input.value = grid[row][col] ? grid[row][col] : '';
+                td.appendChild(input);
+                tr.appendChild(td);
+            }
+            table.appendChild(tr);
+        }
+    }
+
+    // Helper function to check if placing num at grid[row][col] is valid
+    function isValid(grid, row, col, num) {
+        // Check the row
+        for (let i = 0; i < 9; i++) {
+            if (grid[row][i] == num) return false;
+        }
+        // Check the column
+        for (let i = 0; i < 9; i++) {
+            if (grid[i][col] == num) return false;
+        }
+        // Check the 3x3 subgrid
+        const startRow = Math.floor(row / 3) * 3;
+        const startCol = Math.floor(col / 3) * 3;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (grid[startRow + i][startCol + j] == num) return false;
+            }
+        }
+        return true;
+    }
+
+    // Backtracking algorithm to solve the Sudoku puzzle
+    function solve(grid) {
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                if (grid[row][col] == '') {
+                    for (let num = 1; num <= 9; num++) {
+                        if (isValid(grid, row, col, num)) {
+                            grid[row][col] = num;
+                            if (solve(grid)) {
+                                return true;
+                            }
+                            grid[row][col] = '';
+                        }
+                    }
+                    return false; // Trigger backtracking
+                }
+            }
+        }
+        return true; // Solution found
+    }
+
+    // Function to read the grid from input fields, solve the puzzle, and fill in the solution
+    function solveSudoku() {
+        // Read the current values from the grid
+        const inputs = document.querySelectorAll('input');
+        let idx = 0;
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                const value = inputs[idx].value;
+                grid[row][col] = value ? parseInt(value) : '';
+                idx++;
+            }
+        }
+
+        // Solve the puzzle
+        if (solve(grid)) {
+            // Fill the grid with the solution
+            idx = 0;
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    inputs[idx].value = grid[row][col];
+                    idx++;
+                }
+            }
+        } else {
+            alert('No solution exists for this puzzle.');
+        }
+    }
+
+    // Initialize the grid on page load
+    createGrid();
+</script>
+
+</body>
+</html>
